@@ -2,9 +2,11 @@ from rest_framework import serializers
 from .models import Category,Books
 
 class CategorySerializer(serializers.ModelSerializer):
-    model = Category
-    fields = ['name',]
+    class Meta:
+        model = Category
+        fields = '__all__'
     
 class BookSerializer(serializers.ModelSerializer):
-    model = Books
-    fields = ['name','quantity','category']
+    class Meta:
+        model = Books
+        fields = '__all__'
