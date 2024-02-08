@@ -14,8 +14,6 @@ class CategorySerializer(serializers.ModelSerializer):
         
 class BorrowSerializer(serializers.Serializer):
     books = serializers.SerializerMethodField()
-    user_id = serializers.IntegerField(write_only = True)
-    book_id = serializers.ListField(child=serializers.IntegerField(),write_only= True)
     
     def get_books(self):
         books = Books.objects.all()

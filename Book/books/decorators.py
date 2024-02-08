@@ -14,6 +14,7 @@ def authenticate(function):
                     return function(self, request, *args, **kwargs)
             except Exception as e:
                 # Token is invalid
+                raise Exception(e)
                 response = {"detail": "Invalid token"}
                 return Response(response, status=401)
         

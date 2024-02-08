@@ -5,6 +5,7 @@ from .serializers import BookSerializer,CategorySerializer, BorrowSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .decorators import  authenticate
+from .publisher import publish
 # Create your views here.
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -24,7 +25,13 @@ class BorrowView(APIView):
     
     @authenticate
     def post(self,request):
-        return Response("hello")
+        book_id = request.data['book_id']
+        message = {
+            "book_id" : book_id
+        }
+        publish(message)
+        
+        return Response("Booked")
     
     
 
