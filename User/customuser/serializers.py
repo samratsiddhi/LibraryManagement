@@ -11,18 +11,26 @@ class LoginSerializer(serializers.Serializer):
         email = attrs.get('email')
         password = attrs.get('password')    
         
-        user = authenticate(email = email , password = password)
+        user = authenticate(self.context['request'],email = email , password = password)
+          
+              
+        if user:
         
+            refresh = RefreshToken.for_user(user=user)
+            refresh_token = str(refresh)
+            
+            access = AccessToken.for_user(user = user)
+            access_token = str(access)
+            
+            data = {
+                "status" : True,
+                "access_token" : access_token,
+                "refresh_token" :  refresh_token
+            }
         
-        refresh = RefreshToken.for_user(user=user)
-        refresh_token = str(refresh)
+            return data
         
-        access = AccessToken.for_user(user = user)
-        access_token = str(access)
-        
-        data = {
-            "access_token" : access_token,
-            "refresh_token" :  refresh_token
-        }
-        
-        return data
+        return {
+            "status" : False,
+            "detail" : "invalid credentials"
+            }
