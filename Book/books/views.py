@@ -5,7 +5,7 @@ from .serializers import BookSerializer,CategorySerializer, BorrowSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .decorators import  authenticate
-from .publisher import publish
+from .publisher import produce_borrowed_book,produce_return_book
 # Create your views here.
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -35,7 +35,7 @@ class BorrowView(APIView):
             "book_id" : book_id,
             "user_id" : user_id
         }
-        publish(message)
+        produce_borrowed_book(message)
         
         book_details.quantity = book_details.quantity - 1
         book_details.save()   
@@ -43,6 +43,7 @@ class BorrowView(APIView):
         return Response("Borrowed")
 
 class ReturnView(APIView):
+    @authenticate
     def post(self,request,user_id):
         book_id = request.data['book_id']
         book_details = Books.objects.get(pk=book_id)
@@ -51,7 +52,7 @@ class ReturnView(APIView):
             "book_id" : book_id,
             "user_id" : user_id
         }
-        publish(message)
+        produce_return_book(message)
         
         book_details.quantity = book_details.quantity + 1
         book_details.save()   
