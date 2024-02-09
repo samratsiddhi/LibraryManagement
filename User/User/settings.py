@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-n#m0lgr$3jh*_2m2*$xdiw5&0*%l8359i^2vl$1z=t*(z2%6n&'
+SECRET_KEY = 'django-insecure-o*v6%-9&pm7^=bx!1+fix5g^&(#f5fa5qc6d+xa1f6hf=k-ek^'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -136,7 +136,7 @@ SIMPLE_JWT = {
     "UPDATE_LAST_LOGIN": False,
 
     "ALGORITHM": "HS256",
-    "SIGNING_KEY": SECRET_KEY,
+    "SIGNING_KEY": SECRET_KEY ,
     "VERIFYING_KEY": "",
     "AUDIENCE": None,
     "ISSUER": None,
