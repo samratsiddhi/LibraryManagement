@@ -20,20 +20,26 @@ connection = pika.BlockingConnection(pika.URLParameters(config('RABBITMQ')))
 channel = connection.channel()
 
 
-channel.queue_declare(queue= "borrow_book_with_id")
-channel.exchange_declare(exchange= "borrow_book_exhange", exchange_type="direct")  
+channel.queue_declare(queue = "borrow_book_with_id")
+channel.queue_declare(queue = "return_book_with_id")
 
-channel.queue_bind(queue= "borrow_book_with_id",
+channel.exchange_declare(exchange = "borrow_book_exhange", exchange_type="direct")  
+channel.exchange_declare(exchange = "return_book_exhange", exchange_type="direct")  
+
+channel.queue_bind(queue = "borrow_book_with_id",
                    exchange="borrow_book_exhange",
                     routing_key="borrow_book_route",
                    )
+channel.queue_bind(queue = "return_book_with_id",
+                   exchange = "return_book_exhange",
+                    routing_key = "return_book_route",
+                   )
 
-# def main():
-def callback(ch, method, properties, body): 
+def borrow_callback(ch, method, properties, body): 
         received_message_str = body.decode('utf-8')
         message_dict = json.loads(received_message_str)
         
-        print("recieved : ", message_dict)
+        print("recieved borrowed : ", message_dict)
         book_id = message_dict['book_id']
         user_id = message_dict['user_id']
         try:
@@ -43,8 +49,27 @@ def callback(ch, method, properties, body):
         except ObjectDoesNotExist:
             Booklog.objects.create(user_id=user_id, book_id=[book_id])
             
+def return_callback(ch, method, properties, body): 
+        received_message_str = body.decode('utf-8')
+        message_dict = json.loads(received_message_str)
         
-channel.basic_consume(queue='borrow_book_with_id', on_message_callback=callback, auto_ack=True)
+        print("recieved returned  : ", message_dict)
+        book_id = message_dict['book_id']
+        user_id = message_dict['user_id']
+        try:
+            log = Booklog.objects.get(user_id=user_id)
+            try:
+                log.book_id.remove(book_id)
+                log.save()
+            except ValueError:
+                print("Book already returned")
+                
+        except ObjectDoesNotExist:
+            print("Something went wrong")
+            
+        
+channel.basic_consume(queue = 'borrow_book_with_id', on_message_callback = borrow_callback, auto_ack = True)
+channel.basic_consume(queue = 'return_book_with_id', on_message_callback = return_callback, auto_ack = True)
     
 print("consuming......")  
 channel.start_consuming()
