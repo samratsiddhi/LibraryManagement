@@ -10,7 +10,7 @@ def authenticate(function):
                 user_detail = AccessToken(access_token)
                 user_id = user_detail['user_id']
                 if user_id:
-                    # Call the wrapped view function
+                    kwargs['user_id'] = user_id
                     return function(self, request, *args, **kwargs)
             except Exception as e:
                 # Token is invalid

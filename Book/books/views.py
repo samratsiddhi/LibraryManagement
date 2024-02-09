@@ -24,10 +24,11 @@ class BorrowView(APIView):
         return Response(books)
     
     @authenticate
-    def post(self,request):
+    def post(self,request,user_id):
         book_id = request.data['book_id']
         message = {
-            "book_id" : book_id
+            "book_id" : book_id,
+            "user_id" : user_id
         }
         publish(message)
         
