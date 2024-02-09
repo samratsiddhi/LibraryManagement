@@ -17,12 +17,14 @@ from booklog.models import Booklog
 connection = pika.BlockingConnection(pika.URLParameters(config('RABBITMQ')))
 channel = connection.channel()
 channel.queue_declare(queue= "borrow_book")
+channel.queue_bind(queue= "borrow_book")
 
 def main():
     def callback(ch, method, properties, body):
         print("consumed something")
-        message = body.decode('utf-8')
-        book_id = message['book_id']
+        received_message_str = body.decode('utf-8')
+        message_dict = json.loads(received_message_str)
+        book_id = message_dict['book_id']
         print("book_id : " , book_id)
         
     channel.basic_consume(queue='borrow_book', on_message_callback=callback, auto_ack=True)
