@@ -14,15 +14,13 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Borrower.settings")
 application = get_wsgi_application()
 
 from booklog.models import Booklog
+connection = pika.BlockingConnection(pika.URLParameters(config('RABBITMQ')))
+channel = connection.channel()
+channel.queue_declare(queue= "borrow_book")
 
 def main():
-
-    connection = pika.BlockingConnection(pika.URLParameters(config('RABBITMQ')))
-    channel = connection.channel()
-    channel.queue_declare(queue= "borrow_book")
-
     def callback(ch, method, properties, body):
-        
+        print("consumed something")
         message = body.decode('utf-8')
         book_id = message['book_id']
         print("book_id : " , book_id)
