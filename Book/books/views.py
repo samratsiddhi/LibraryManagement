@@ -26,13 +26,37 @@ class BorrowView(APIView):
     @authenticate
     def post(self,request,user_id):
         book_id = request.data['book_id']
+        book_details = Books.objects.get(pk=book_id)
+        
+        if book_details.quantity == 0:
+            return Response("Book out of stock")
+            
         message = {
             "book_id" : book_id,
             "user_id" : user_id
         }
         publish(message)
         
-        return Response("Booked")
+        book_details.quantity = book_details.quantity - 1
+        book_details.save()   
+             
+        return Response("Borrowed")
+
+class ReturnView(APIView):
+    def post(self,request,user_id):
+        book_id = request.data['book_id']
+        book_details = Books.objects.get(pk=book_id)
+            
+        message = {
+            "book_id" : book_id,
+            "user_id" : user_id
+        }
+        publish(message)
+        
+        book_details.quantity = book_details.quantity + 1
+        book_details.save()   
+             
+        return Response("Returned")
     
     
 
