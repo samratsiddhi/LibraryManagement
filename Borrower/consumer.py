@@ -14,33 +14,50 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Borrower.settings")
 application = get_wsgi_application()
 
 from booklog.models import Booklog
+from django.core.exceptions import ObjectDoesNotExist
+
 connection = pika.BlockingConnection(pika.URLParameters(config('RABBITMQ')))
 channel = connection.channel()
-channel.queue_declare(queue= "borrow_book")
-channel.queue_bind(queue= "borrow_book")
 
-def main():
-    def callback(ch, method, properties, body):
-        print("consumed something")
+
+channel.queue_declare(queue= "borrow_book_with_id")
+channel.exchange_declare(exchange= "borrow_book_exhange", exchange_type="direct")  
+
+channel.queue_bind(queue= "borrow_book_with_id",
+                   exchange="borrow_book_exhange",
+                    routing_key="borrow_book_route",
+                   )
+
+# def main():
+def callback(ch, method, properties, body): 
         received_message_str = body.decode('utf-8')
         message_dict = json.loads(received_message_str)
-        book_id = message_dict['book_id']
-        print("book_id : " , book_id)
         
-    channel.basic_consume(queue='borrow_book', on_message_callback=callback, auto_ack=True)
-    
-    print("consuming......")  
-    channel.start_consuming()
-
-
-if __name__ == '__main__':
-    try:
-        main()
-    except KeyboardInterrupt:
-        print('Interrupted')
+        print("recieved : ", message_dict)
+        book_id = message_dict['book_id']
+        user_id = message_dict['user_id']
         try:
-            sys.exit(0)
-        except SystemExit:
-            os._exit(0)
+            log = Booklog.objects.get(user_id=user_id)
+            log.book_id.append(book_id)
+            log.save()
+        except ObjectDoesNotExist:
+            Booklog.objects.create(user_id=user_id, book_id=[book_id])
+            
+        
+channel.basic_consume(queue='borrow_book_with_id', on_message_callback=callback, auto_ack=True)
+    
+print("consuming......")  
+channel.start_consuming()
+
+
+# if __name__ == '__main__':
+#     try:
+#         main()
+#     except KeyboardInterrupt:
+#         print('Interrupted')
+#         try:
+#             sys.exit(0)
+#         except SystemExit:
+#             os._exit(0)
     
 
