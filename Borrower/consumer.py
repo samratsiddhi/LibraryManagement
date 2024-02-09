@@ -27,8 +27,9 @@ def main():
         book_id = message['book_id']
         print("book_id : " , book_id)
         
-    channel.basic_consume(queue='hello', on_message_callback=callback, auto_ack=True)
-        
+    channel.basic_consume(queue='borrow_book', on_message_callback=callback, auto_ack=True)
+    
+    print("consuming......")  
     channel.start_consuming()
 
 
